@@ -34,6 +34,59 @@ void insert(struct TrieNode *root, char *str)
     temp->is_end_of_word = true;
 }
 
+int have_children(struct TrieNode *curr)
+{
+    int i = 0;
+    for (i = 0; i < ALPHABET_SIZE; i++)
+        if (curr->children[i] != NULL)     /* at least one child */
+            return 1;
+    return 0;
+}
+
+int delete(struct TrieNode **curr, char *str)
+{
+    /* return if Trie is empty */
+    if (*curr == NULL)
+        return 0;
+    
+    if (*str != '\0')
+    {
+        /* recursively call delete on the nodes */
+        if (*curr != NULL && (*curr)->children[*str - 'a'] != NULL &&
+            delete(&(*curr)->children[*str - 'a'], str + 1) &&
+            (*curr)->is_end_of_word == false)
+        {
+            if (!have_children(*curr))
+            {
+                free(*curr);
+                (*curr) = NULL;
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+    
+    /* we have reached the end of the string */
+    if (*str == '\0' && (*curr)->is_end_of_word)
+    {
+        if (!have_children(*curr))
+        {
+            free(*curr);    /* delete curr node */
+            (*curr) = NULL;
+            return 1;   /* delete non-leaf parent nodes */
+        }
+        else
+        {
+            (*curr)->is_end_of_word = false;    /* mark node as non-leaf node */
+            return 0;   /* do not delete parent nodes */
+        }
+    }
+    return 0;
+}
+
 bool search(struct TrieNode *root, char *str)
 {
     int index;
@@ -47,7 +100,7 @@ bool search(struct TrieNode *root, char *str)
         temp = temp->children[index];
         str++;
     }
-    return true;
+    return temp->is_end_of_word;
 }
 
 int count_children(struct TrieNode *node, int *index)
@@ -94,6 +147,20 @@ char *walk_trie(struct TrieNode *root)
     return prefix;
 }
 
+void preorder(struct TrieNode *root, struct TrieNode *curr)
+{
+    int i;
+    if (!curr)
+        return;
+    
+    for (i = 0; i < ALPHABET_SIZE; i++)
+    {
+        if (curr->children[i] != NULL)
+            printf("%c", 'a' + i);
+        preorder(root, curr->children[i]);
+    }
+}
+
 char * longestCommonPrefix(char ** strs, int strsSize){
     int i;
     struct TrieNode *root = NULL;
@@ -108,5 +175,14 @@ char * longestCommonPrefix(char ** strs, int strsSize){
     
     char *prefix = NULL;
     prefix = walk_trie(root);
+    preorder(root, root);
+    
+    printf("\n\n");
+    printf("Searching %d\n", search(root, "sorting"));
+    delete(&root, "sorting");
+    preorder(root, root);
+    printf("\n\n");
+    printf("Searching %d\n", search(root, "sorting"));
+    
     return prefix;
 }
