@@ -3,7 +3,7 @@
 
 int strStr(char * haystack, char * needle){
     
-    int i = 0, j = 0, index = -1;
+    int i = 0, j = 0, index = 0;
     if (haystack == NULL || needle == NULL)
         return 0;
     if (needle[0] == '\0')
@@ -17,14 +17,22 @@ int strStr(char * haystack, char * needle){
     
     for (i = 0; i < h_len; i++)
     {
-        index = i;
-        for (j = 0; j < n_len; j++)
+        if (haystack[i] == needle[index])
         {
-            if (haystack[i + j] != needle[j])
-                break;
+            if (index == n_len - 1)
+            {
+                return i - index;
+            }
+            else
+            {
+                index++;
+            }
         }
-        if (needle[j] == '\0')
-            return index;
+        else
+        {
+            i = i - index;
+            index = 0;
+        }
     }
     return -1;
 }
